@@ -120,7 +120,6 @@ const MoviePlayer = ({ movie, onClose }) => {
 
     const onPlayerReady = (event) => {
         // No se reproduce de forma automática, el usuario debe hacer clic
-        // event.target.playVideo();
         setDuration(event.target.getDuration());
         setIsPlaying(false);
         event.target.setVolume(volume * 100);
@@ -197,7 +196,7 @@ const MoviePlayer = ({ movie, onClose }) => {
 
     const handleFullscreenClick = () => {
         if (!playerContainerRef.current) return;
-        
+
         if (isFullscreen) {
             document.exitFullscreen();
         } else {
@@ -301,7 +300,7 @@ const MoviePlayer = ({ movie, onClose }) => {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.2, duration: 0.5 }}
-                                        className="text-white text-3xl font-bold drop-shadow-lg"
+                                        className="text-white text-xl sm:text-3xl font-bold drop-shadow-lg"
                                     >
                                         {movie?.title}
                                     </motion.h2>
@@ -318,7 +317,7 @@ const MoviePlayer = ({ movie, onClose }) => {
                                     transition={{ duration: 0.5, ease: 'easeInOut' }}
                                     className="absolute inset-0 z-10 flex flex-col items-start justify-start p-4 bg-black/40 pointer-events-none"
                                 >
-                                    <h2 className="text-white text-2xl font-bold drop-shadow-lg">
+                                    <h2 className="text-white text-xl sm:text-2xl font-bold drop-shadow-lg">
                                         {movie.title}
                                     </h2>
                                 </motion.div>
@@ -352,9 +351,9 @@ const MoviePlayer = ({ movie, onClose }) => {
                                         onClick={handleReplayClick}
                                         className="p-4 rounded-full text-white bg-white/10 border border-white/20 hover:bg-white/20 transition"
                                     >
-                                        <Repeat size={44} className="text-blue-300" />
+                                        <Repeat size={32} className="sm:size-11 text-blue-300" />
                                     </motion.button>
-                                    <p className="mt-4 text-xl font-bold text-white drop-shadow-lg">Ver de nuevo</p>
+                                    <p className="mt-4 text-base sm:text-xl font-bold text-white drop-shadow-lg">Ver de nuevo</p>
                                 </motion.div>
                             )}
 
@@ -377,7 +376,7 @@ const MoviePlayer = ({ movie, onClose }) => {
                                                 onClick={onClose}
                                                 className="p-2 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition"
                                             >
-                                                <X size={22} />
+                                                <X size={18} className="sm:size-5" />
                                             </motion.button>
                                         </div>
 
@@ -389,7 +388,7 @@ const MoviePlayer = ({ movie, onClose }) => {
                                                 onClick={isPlaying ? handlePauseClick : handlePlayClick}
                                                 className="p-4 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition pointer-events-auto"
                                             >
-                                                {isPlaying ? <Pause size={48} className="text-blue-300" /> : <Play size={48} className="text-blue-300" />}
+                                                {isPlaying ? <Pause size={32} className="sm:size-12 text-blue-300" /> : <Play size={32} className="sm:size-12 text-blue-300" />}
                                             </motion.button>
                                         </div>
 
@@ -397,7 +396,7 @@ const MoviePlayer = ({ movie, onClose }) => {
                                         <div className="w-full bg-[#0d253f] rounded-b-2xl px-4 pb-2 pointer-events-auto">
                                             <div className="flex justify-end items-center mb-1 pt-1">
                                                 <div className="flex items-center space-x-2 opacity-90">
-                                                    <span className="text-xs font-semibold text-blue-200/90">Cine Brigitte</span>
+                                                    <span className="text-xs font-semibold text-blue-200/90 hidden sm:block">Cine Brigitte</span>
                                                 </div>
                                             </div>
                                             <div
@@ -439,7 +438,7 @@ const MoviePlayer = ({ movie, onClose }) => {
                                                         step="0.01"
                                                         value={volume}
                                                         onChange={handleVolumeChange}
-                                                        className="w-16 cursor-pointer accent-blue-500"
+                                                        className="w-16 cursor-pointer accent-blue-500 hidden sm:block"
                                                     />
                                                 </div>
                                                 <div className="flex items-center space-x-2">
@@ -466,4 +465,3 @@ const MoviePlayer = ({ movie, onClose }) => {
 };
 
 export default MoviePlayer;
-
