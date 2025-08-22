@@ -39,7 +39,7 @@ const MoviePlayer = ({ movie, onClose }) => {
             if (movie?.youtube_url) {
                 const videoId = getYouTubeVideoId(movie.youtube_url);
                 if (videoId) {
-                    initializePlayer(videoId, 1);
+                    initializePlayer(videoId, 0); // La reproducción automática está desactivada por defecto
                 }
             }
         };
@@ -119,9 +119,10 @@ const MoviePlayer = ({ movie, onClose }) => {
     };
 
     const onPlayerReady = (event) => {
-        event.target.playVideo();
+        // No se reproduce de forma automática, el usuario debe hacer clic
+        // event.target.playVideo();
         setDuration(event.target.getDuration());
-        setIsPlaying(true);
+        setIsPlaying(false);
         event.target.setVolume(volume * 100);
     };
 
@@ -148,10 +149,12 @@ const MoviePlayer = ({ movie, onClose }) => {
         if (!movie?.youtube_url) return;
         const videoId = getYouTubeVideoId(movie.youtube_url);
         if (!videoId) return;
-        if (window.YT?.Player && !playerInstance.current) {
-            initializePlayer(videoId, 1);
-        } else if (playerInstance.current) {
+        // Inicia el video solo si el reproductor existe
+        if (playerInstance.current) {
             playerInstance.current.playVideo();
+        } else if (window.YT?.Player && !playerInstance.current) {
+             // Si el reproductor no existe, lo inicializa y lo reproduce
+            initializePlayer(videoId, 1);
         }
     };
 
@@ -194,15 +197,10 @@ const MoviePlayer = ({ movie, onClose }) => {
 
     const handleFullscreenClick = () => {
         if (!playerContainerRef.current) return;
-
+        
         if (isFullscreen) {
             document.exitFullscreen();
-            return;
-        }
-        setIsTransitioningToFullscreen(true);
-        
-        // 🔹 El navegador móvil maneja esto
-        setTimeout(() => {
+        } else {
             if (playerContainerRef.current.requestFullscreen) {
                 playerContainerRef.current.requestFullscreen();
             } else if (playerContainerRef.current.webkitRequestFullscreen) {
@@ -210,10 +208,7 @@ const MoviePlayer = ({ movie, onClose }) => {
             } else if (playerContainerRef.current.msRequestFullscreen) {
                 playerContainerRef.current.msRequestFullscreen();
             }
-            setTimeout(() => {
-                setIsTransitioningToFullscreen(false);
-            }, 500);
-        }, 1200);
+        }
     };
 
     const formatTime = (time) => {
@@ -275,7 +270,7 @@ const MoviePlayer = ({ movie, onClose }) => {
                 {/* Contenedor del reproductor */}
                 <div
                     className="w-full relative aspect-video overflow-hidden rounded-2xl
-                    bg-black border border-white/20"
+                    bg-black border border-black"
                     ref={playerContainerRef}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
@@ -471,3 +466,4 @@ const MoviePlayer = ({ movie, onClose }) => {
 };
 
 export default MoviePlayer;
+
