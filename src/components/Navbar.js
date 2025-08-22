@@ -44,7 +44,7 @@ const Navbar = () => {
                 {/* Logo y título */}
                 <Link to="/home" className="flex items-center space-x-2 flex-shrink-0">
                     <BrigidCross size={24} className="bg-white/10 border border-white/20 shadow-lg p-1" />
-                    <span className="text-xl sm:text-2xl font-extrabold text-white hidden sm:block">
+                    <span className="text-xl sm:text-2xl font-extrabold text-white sm:block">
                         Cine Brigitte
                     </span>
                 </Link>
