@@ -2,13 +2,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+// Importación correcta de Supabase
 import { supabase } from '../utils/supabaseClient';
 import { Search, X, Keyboard, ArrowLeft } from 'lucide-react';
 
-const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const alphabet = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
 const numbers = '1234567890'.split('');
-const keyboardLayout = 'QWERTYUIOPASDFGHJKLÑZXCVBNM'.split('');
-
 
 // Componente de icono para mantener la consistencia
 const BrigidCross = ({ size = 32, className = "" }) => (
@@ -232,13 +231,14 @@ transition={{ type: "spring", stiffness: 300, damping: 30 }}
 className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg p-4 rounded-t-2xl z-50"
 >
 <div className="grid grid-cols-10 gap-2 max-w-3xl mx-auto">
-{keyboardLayout.map(key => (
-<button key={key} onClick={() => handleKeyClick(key)} className="h-12 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-lg hover:bg-blue-600/50 transition-colors">
-{key}
-</button>
+{alphabet.map(key => (
+<button key={key} onClick={() => handleKeyClick(key)} className="h-10 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-base hover:bg-blue-600/50 transition-colors">{key}</button>
 ))}
-<button onClick={() => handleKeyClick('⌫')} className="col-span-2 h-12 rounded-lg bg-white/20 border border-white/20 text-white font-bold text-lg hover:bg-red-600/50 transition-colors">⌫</button>
-<button onClick={() => handleKeyClick('Espacio')} className="col-span-8 h-12 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-lg hover:bg-blue-600/50 transition-colors">Espacio</button>
+{numbers.map(key => (
+<button key={key} onClick={() => handleKeyClick(key)} className="h-10 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-base hover:bg-blue-600/50 transition-colors">{key}</button>
+))}
+<button onClick={() => handleKeyClick('⌫')} className="col-span-2 h-10 rounded-lg bg-white/20 border border-white/20 text-white font-bold text-base hover:bg-red-600/50 transition-colors">⌫</button>
+<button onClick={() => handleKeyClick('Espacio')} className="col-span-8 h-10 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-base hover:bg-blue-600/50 transition-colors">Espacio</button>
 </div>
 </motion.div>
 )}
