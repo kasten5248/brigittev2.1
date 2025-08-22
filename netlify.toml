@@ -1,0 +1,20 @@
+# netlify.toml
+
+# Configuración de construcción
+[build]
+  # Comando para construir tu proyecto de React
+  command = "npm run build"
+  
+  # Directorio donde se guardan los archivos construidos
+  publish = "build"
+  
+  # Entorno de Node.js
+  [build.environment]
+    NODE_VERSION = "18"
+
+# Regla de redirección para Single-Page Applications (SPA)
+# Esto es crucial para que las rutas de React (ej. /movie/123) funcionen correctamente
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
