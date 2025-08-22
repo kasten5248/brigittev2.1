@@ -2,17 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, LogOut, Search, UserCheck } from 'lucide-react';
-// import { useAuth } from '../hooks/useAuth';
-
-// Mock de useAuth para que el código compile
-const useAuth = () => {
-  const [currentUser, setCurrentUser] = useState(null);
-  const signOut = () => {
-    console.log('User signed out.');
-    setCurrentUser(null);
-  };
-  return { currentUser, signOut };
-};
+import { useAuth } from '../hooks/useAuth';
 
 // Componente de icono para mantener la consistencia
 const BrigidCross = ({ size = 32, className = "" }) => (
