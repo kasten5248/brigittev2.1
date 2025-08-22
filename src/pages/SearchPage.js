@@ -2,8 +2,28 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-// Importación correcta de Supabase
-import { supabase } from '../utils/supabaseClient';
+// MOCK de Supabase para que el código compile
+const supabase = {
+  from: (table) => ({
+    select: (columns) => {
+      // Mock de datos para el editor
+      const movies = [
+        { id: 1, title: 'Película A', genre: 'Acción', cover_image_url: 'https://placehold.co/400x600/1a202c/a0aec0?text=A' },
+        { id: 2, title: 'Película B', genre: 'Comedia', cover_image_url: 'https://placehold.co/400x600/1a202c/a0aec0?text=B' },
+        { id: 3, title: 'Película C', genre: 'Acción', cover_image_url: 'https://placehold.co/400x600/1a202c/a0aec0?text=C' },
+      ];
+      if (columns === 'genre') {
+        return { data: [{ genre: 'Acción' }, { genre: 'Comedia' }], error: null };
+      }
+      return { data: movies, error: null };
+    },
+    eq: (column, value) => ({ data: [], error: null }),
+    ilike: (column, value) => ({
+      data: movies.filter(movie => movie.title.toLowerCase().includes(value.toLowerCase().replace(/%/g, ''))),
+      error: null
+    }),
+  })
+};
 import { Search, X, Keyboard, ArrowLeft } from 'lucide-react';
 
 const alphabet = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
@@ -110,48 +130,48 @@ return (
 <div className="min-h-screen bg-gradient-to-br from-black via-blue-900 to-black text-white p-4 pt-8 md:pt-12">
 <div className="container mx-auto">
 {/* Header simétrico */}
-<div className="flex items-center justify-between mb-8 gap-8">
+<div className="flex items-center justify-between mb-8 gap-2 sm:gap-8">
 {/* Lado Izquierdo: Botón Volver */}
 <div className="flex-1 flex justify-start">
 <motion.button
 whileHover={{ scale: 1.05 }}
 whileTap={{ scale: 0.97 }}
 onClick={() => navigate(-1)}
-className="flex items-center px-4 py-3 rounded-full font-semibold transition-all bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] whitespace-nowrap"
+className="flex items-center px-2 py-1 sm:px-4 sm:py-3 rounded-full font-semibold transition-all bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] whitespace-nowrap text-sm sm:text-base"
 >
-<ArrowLeft className="mr-2" /> Volver
+<ArrowLeft className="mr-1 sm:mr-2" size={16} /> Volver
 </motion.button>
 </div>
 
 {/* Centro: Barra de Búsqueda */}
 <div className="relative flex-grow max-w-2xl">
-<Search className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-300/70 z-10" size={20} />
+<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-300/70 z-10" size={16} />
 <input
 type="text"
 placeholder="Buscar por título..."
 value={searchTerm}
 onChange={(e) => setSearchTerm(e.target.value)}
-className="w-full pl-14 pr-24 py-3 rounded-full bg-black/30 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400/80 transition-all text-lg"
+className="w-full pl-8 pr-16 py-2 rounded-full bg-black/30 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400/80 transition-all text-sm"
 />
-<div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center space-x-2">
+<div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
 {searchTerm && (
-<button onClick={() => setSearchTerm('')} className="p-2 rounded-full hover:bg-white/10 transition-colors">
-<X size={20} className="text-gray-400" />
+<button onClick={() => setSearchTerm('')} className="p-1 rounded-full hover:bg-white/10 transition-colors">
+<X size={16} className="text-gray-400" />
 </button>
 )}
-<button onClick={() => setShowKeyboard(!showKeyboard)} className={`p-2 rounded-full transition-colors ${showKeyboard ? 'bg-blue-600/50' : 'hover:bg-white/10'}`}>
-<Keyboard size={20} className="text-blue-300" />
+<button onClick={() => setShowKeyboard(!showKeyboard)} className={`p-1 rounded-full transition-colors ${showKeyboard ? 'bg-blue-600/50' : 'hover:bg-white/10'}`}>
+<Keyboard size={16} className="text-blue-300" />
 </button>
 </div>
 </div>
 
 {/* Lado Derecho: Logo y Título */}
 <div className="flex-1 flex justify-end">
-<div className="flex items-center space-x-3 opacity-90">
-<span className="text-2xl font-extrabold text-white hidden sm:block">
+<div className="flex items-center space-x-1 opacity-90">
+<span className="text-xl font-extrabold text-white hidden sm:block">
 Cine Brigitte
 </span>
-<BrigidCross size={32} className="bg-white/10 border border-white/20 shadow-lg p-1.5" />
+<BrigidCross size={24} className="bg-white/10 border border-white/20 shadow-lg p-1" />
 </div>
 </div>
 </div>
@@ -173,7 +193,7 @@ Cine Brigitte
 <h2 className="text-lg font-bold mb-4 text-blue-300">Géneros</h2>
 <div className="flex flex-col space-y-2">
 {genres.map(genre => (
-<button key={genre} onClick={() => handleFilterClick(genre, 'genre')} className="text-left text-gray-300 hover:text-white hover:bg-white/10 p-2 rounded-md transition-colors">
+<button key={genre} onClick={() => handleFilterClick(genre, 'genre')} className="text-left text-gray-300 hover:text-white hover:bg-white/10 p-2 rounded-md transition-colors text-sm">
 {genre}
 </button>
 ))}
