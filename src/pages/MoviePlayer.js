@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import YouTube from 'react-youtube';
 import { Play, Pause, Maximize, Minimize, Volume2, VolumeX, X, Repeat } from 'lucide-react';
+import { BrigidCross } from '../components/Navbar';
+
 
 const MoviePlayer = ({ movie, onClose }) => {
     // Estado UI / Player
@@ -192,11 +194,15 @@ const MoviePlayer = ({ movie, onClose }) => {
 
     const handleFullscreenClick = () => {
         if (!playerContainerRef.current) return;
-        
-        // 🔹 El navegador móvil maneja esto
+
         if (isFullscreen) {
             document.exitFullscreen();
-        } else {
+            return;
+        }
+        setIsTransitioningToFullscreen(true);
+        
+        // 🔹 El navegador móvil maneja esto
+        setTimeout(() => {
             if (playerContainerRef.current.requestFullscreen) {
                 playerContainerRef.current.requestFullscreen();
             } else if (playerContainerRef.current.webkitRequestFullscreen) {
@@ -204,7 +210,10 @@ const MoviePlayer = ({ movie, onClose }) => {
             } else if (playerContainerRef.current.msRequestFullscreen) {
                 playerContainerRef.current.msRequestFullscreen();
             }
-        }
+            setTimeout(() => {
+                setIsTransitioningToFullscreen(false);
+            }, 500);
+        }, 1200);
     };
 
     const formatTime = (time) => {
