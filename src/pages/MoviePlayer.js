@@ -1,9 +1,13 @@
 // src/pages/MoviePlayer.js
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import YouTube from 'react-youtube';
 import { Play, Pause, Maximize, Minimize, Volume2, VolumeX, X, Repeat } from 'lucide-react';
+import { BrigidCross } from '../components/Navbar';
+
 
 const MoviePlayer = ({ movie, onClose }) => {
+    // Estado UI / Player
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -13,13 +17,15 @@ const MoviePlayer = ({ movie, onClose }) => {
     const [volume, setVolume] = useState(1);
     const [lastVolume, setLastVolume] = useState(1);
     const [videoEnded, setVideoEnded] = useState(false);
-    const [isFullscreen, setIsFullscreen] = useState(false);
     const [isTransitioningToFullscreen, setIsTransitioningToFullscreen] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
+    // Refs
     const youtubePlayerRef = useRef(null);
     const playerContainerRef = useRef(null);
     const playerInstance = useRef(null);
 
+    // Cargar API de YouTube
     useEffect(() => {
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
@@ -29,14 +35,14 @@ const MoviePlayer = ({ movie, onClose }) => {
         } else {
             document.head.appendChild(tag);
         }
-
         window.onYouTubeIframeAPIReady = () => {
             if (movie?.youtube_url) {
                 const videoId = getYouTubeVideoId(movie.youtube_url);
-                if (videoId) initializePlayer(videoId, 1);
+                if (videoId) {
+                    initializePlayer(videoId, 1);
+                }
             }
         };
-
         return () => {
             if (playerInstance.current) {
                 playerInstance.current.destroy();
@@ -45,12 +51,16 @@ const MoviePlayer = ({ movie, onClose }) => {
         };
     }, [movie]);
 
+    // Listener para el estado de pantalla completa
     useEffect(() => {
-        const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
 
+    // Actualizar progreso
     useEffect(() => {
         let interval;
         if (isPlaying) {
@@ -65,31 +75,46 @@ const MoviePlayer = ({ movie, onClose }) => {
         return () => clearInterval(interval);
     }, [isPlaying, duration]);
 
+    // Util: obtener ID de YouTube
     const getYouTubeVideoId = (url) => {
         if (!url) return null;
         try {
             const u = new URL(url);
-            if (u.hostname.includes('youtube.com')) return new URLSearchParams(u.search).get('v');
-            if (u.hostname === 'youtu.be') return u.pathname.substring(1);
+            if (u.hostname.includes('youtube.com')) {
+                return new URLSearchParams(u.search).get('v');
+            } else if (u.hostname === 'youtu.be') {
+                return u.pathname.substring(1);
+            }
         } catch (e) {
             console.error("Invalid YouTube URL:", url);
         }
         return null;
     };
 
+    // Función para ocultar controles
     const hideControls = () => {
         clearTimeout(controlsTimeout);
         const t = setTimeout(() => setIsControlsVisible(false), 4000);
         setControlsTimeout(t);
     };
 
+    // Inicializar reproductor
     const initializePlayer = (videoId, autoplay = 0) => {
         if (!videoId || !youtubePlayerRef.current || playerInstance.current) return;
         setVideoEnded(false);
         playerInstance.current = new window.YT.Player(youtubePlayerRef.current, {
             videoId,
-            playerVars: { autoplay, controls: 0, modestbranding: 1, rel: 0, showinfo: 0 },
-            events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
+            playerVars: {
+                autoplay,
+                controls: 0,
+                modestbranding: 1,
+                rel: 0,
+                showinfo: 0,
+            },
+            events: {
+                onReady: onPlayerReady,
+                onStateChange: onPlayerStateChange,
+            },
         });
     };
 
@@ -106,7 +131,7 @@ const MoviePlayer = ({ movie, onClose }) => {
         if (event.data === YT.PlayerState.PLAYING) {
             setIsPlaying(true);
             setVideoEnded(false);
-            hideControls();
+            hideControls(); 
         } else if (event.data === YT.PlayerState.PAUSED) {
             setIsPlaying(false);
             clearTimeout(controlsTimeout);
@@ -125,8 +150,8 @@ const MoviePlayer = ({ movie, onClose }) => {
         if (!videoId) return;
         if (window.YT?.Player && !playerInstance.current) {
             initializePlayer(videoId, 1);
-        } else {
-            playerInstance.current?.playVideo();
+        } else if (playerInstance.current) {
+            playerInstance.current.playVideo();
         }
     };
 
@@ -146,8 +171,12 @@ const MoviePlayer = ({ movie, onClose }) => {
         const v = parseFloat(e.target.value);
         setVolume(v);
         if (playerInstance.current) playerInstance.current.setVolume(v * 100);
-        if (v > 0) { setIsMuted(false); setLastVolume(v); }
-        else setIsMuted(true);
+        if (v > 0) {
+            setIsMuted(false);
+            setLastVolume(v);
+        } else {
+            setIsMuted(true);
+        }
     };
 
     const handleMuteToggle = () => {
@@ -165,13 +194,25 @@ const MoviePlayer = ({ movie, onClose }) => {
 
     const handleFullscreenClick = () => {
         if (!playerContainerRef.current) return;
-        if (isFullscreen) return document.exitFullscreen();
+
+        if (isFullscreen) {
+            document.exitFullscreen();
+            return;
+        }
         setIsTransitioningToFullscreen(true);
+        
+        // 🔹 El navegador maneja la orientación a horizontal de forma nativa en fullscreen
         setTimeout(() => {
-            if (playerContainerRef.current.requestFullscreen) playerContainerRef.current.requestFullscreen();
-            else if (playerContainerRef.current.webkitRequestFullscreen) playerContainerRef.current.webkitRequestFullscreen();
-            else if (playerContainerRef.current.msRequestFullscreen) playerContainerRef.current.msRequestFullscreen();
-            setTimeout(() => setIsTransitioningToFullscreen(false), 500);
+            if (playerContainerRef.current.requestFullscreen) {
+                playerContainerRef.current.requestFullscreen();
+            } else if (playerContainerRef.current.webkitRequestFullscreen) {
+                playerContainerRef.current.webkitRequestFullscreen();
+            } else if (playerContainerRef.current.msRequestFullscreen) {
+                playerContainerRef.current.msRequestFullscreen();
+            }
+            setTimeout(() => {
+                setIsTransitioningToFullscreen(false);
+            }, 500);
         }, 1200);
     };
 
@@ -181,8 +222,18 @@ const MoviePlayer = ({ movie, onClose }) => {
         return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     };
 
-    const handleMouseMove = () => { setIsControlsVisible(true); if (isPlaying) hideControls(); };
-    const handleMouseLeave = () => { if (isPlaying) setIsControlsVisible(false); };
+    const handleMouseMove = () => {
+        setIsControlsVisible(true);
+        if (isPlaying) {
+            hideControls();
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (isPlaying) {
+            setIsControlsVisible(false);
+        }
+    };
 
     const handleCloseVideo = () => {
         if (playerInstance.current) {
@@ -221,17 +272,27 @@ const MoviePlayer = ({ movie, onClose }) => {
                 transition={{ duration: 0.4 }}
                 className="flex flex-col items-center md:items-start gap-8 w-full"
             >
+                {/* Contenedor del reproductor */}
                 <div
-                    className="w-full relative aspect-video overflow-hidden rounded-2xl bg-black border border-white/20"
+                    className="w-full relative aspect-video overflow-hidden rounded-2xl
+                    bg-black border border-white/20"
                     ref={playerContainerRef}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
                 >
-                    <div id="youtube-player" ref={youtubePlayerRef} className="absolute w-full h-full z-0" />
+                    {/* YouTube */}
+                    <div
+                        id="youtube-player"
+                        ref={youtubePlayerRef}
+                        className="absolute w-full h-full z-0"
+                    />
 
-                    <div className="absolute w-full h-full top-0 left-0 flex flex-col justify-between items-center rounded-2xl overflow-hidden transition-colors">
-                        {/* Animaciones y controles */}
+                    {/* UI personalizada */}
+                    <div
+                        className={`absolute w-full h-full top-0 left-0 flex flex-col justify-between items-center rounded-2xl overflow-hidden transition-colors`}
+                    >
                         <AnimatePresence>
+                            {/* Transición a pantalla completa */}
                             {isTransitioningToFullscreen && (
                                 <motion.div
                                     key="fullscreen-transition"
@@ -252,6 +313,7 @@ const MoviePlayer = ({ movie, onClose }) => {
                                 </motion.div>
                             )}
 
+                            {/* Overlay de Pausa con Desenfoque Fuerte */}
                             {!isPlaying && !videoEnded && (
                                 <motion.div
                                     key="pause-overlay"
@@ -261,10 +323,13 @@ const MoviePlayer = ({ movie, onClose }) => {
                                     transition={{ duration: 0.5, ease: 'easeInOut' }}
                                     className="absolute inset-0 z-10 flex flex-col items-start justify-start p-4 bg-black/40 pointer-events-none"
                                 >
-                                    <h2 className="text-white text-2xl font-bold drop-shadow-lg">{movie.title}</h2>
+                                    <h2 className="text-white text-2xl font-bold drop-shadow-lg">
+                                        {movie.title}
+                                    </h2>
                                 </motion.div>
                             )}
 
+                            {/* Pantalla de fin de video con desenfoque */}
                             {videoEnded && (
                                 <motion.div
                                     key="ended-overlay"
@@ -298,102 +363,105 @@ const MoviePlayer = ({ movie, onClose }) => {
                                 </motion.div>
                             )}
 
-                            {isControlsVisible && !videoEnded && (
-                                <motion.div
-                                    key="controls-container"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="absolute inset-0 z-20 flex flex-col justify-between pointer-events-none"
-                                >
-                                    {/* Botón cerrar */}
-                                    <div className="flex justify-end items-start w-full p-4 pointer-events-auto">
-                                        <motion.button
-                                            whileHover={{ scale: 1.08 }}
-                                            whileTap={{ scale: 0.94 }}
-                                            onClick={handleCloseVideo}
-                                            className="p-2 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition"
-                                        >
-                                            <X size={22} />
-                                        </motion.button>
-                                    </div>
-
-                                    {/* Botón central play/pause */}
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <motion.button
-                                            whileHover={{ scale: 1.08 }}
-                                            whileTap={{ scale: 0.94 }}
-                                            onClick={isPlaying ? handlePauseClick : handlePlayClick}
-                                            className="p-4 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition pointer-events-auto"
-                                        >
-                                            {isPlaying ? <Pause size={48} className="text-blue-300" /> : <Play size={48} className="text-blue-300" />}
-                                        </motion.button>
-                                    </div>
-
-                                    {/* Barra inferior */}
-                                    <div className="w-full bg-[#0d253f] rounded-b-2xl px-4 pb-2 pointer-events-auto">
-                                        <div className="flex justify-end items-center mb-1 pt-1">
-                                            <div className="flex items-center space-x-2 opacity-90">
-                                                <span className="text-xs font-semibold text-blue-200/90">Cine Brigitte</span>
-                                            </div>
+                            {/* Contenedor de controles (solo visible si el video no ha terminado) */}
+                            <AnimatePresence>
+                                {isControlsVisible && !videoEnded && (
+                                    <motion.div
+                                        key="controls-container"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="absolute inset-0 z-20 flex flex-col justify-between pointer-events-none"
+                                    >
+                                        {/* Botón de cerrar */}
+                                        <div className="flex justify-end items-start w-full p-4 pointer-events-auto">
+                                            <motion.button
+                                                whileHover={{ scale: 1.08 }}
+                                                whileTap={{ scale: 0.94 }}
+                                                onClick={onClose}
+                                                className="p-2 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition"
+                                            >
+                                                <X size={22} />
+                                            </motion.button>
                                         </div>
-                                        <div
-                                            className="w-full h-2 bg-white/20 rounded-full cursor-pointer group"
-                                            onClick={handleSeek}
-                                        >
-                                            <div
-                                                className="h-full rounded-full transition-all duration-150 ease-linear bg-gradient-to-r from-blue-400 to-blue-600"
-                                                style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
-                                            />
+
+                                        {/* Botón central */}
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <motion.button
+                                                whileHover={{ scale: 1.08 }}
+                                                whileTap={{ scale: 0.94 }}
+                                                onClick={isPlaying ? handlePauseClick : handlePlayClick}
+                                                className="p-4 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition pointer-events-auto"
+                                            >
+                                                {isPlaying ? <Pause size={48} className="text-blue-300" /> : <Play size={48} className="text-blue-300" />}
+                                            </motion.button>
                                         </div>
-                                        <div className="flex items-center justify-between mt-2">
-                                            <div className="flex items-center space-x-2">
-                                                <motion.button
-                                                    whileHover={{ scale: 1.08 }}
-                                                    whileTap={{ scale: 0.94 }}
-                                                    onClick={isPlaying ? handlePauseClick : handlePlayClick}
-                                                    className="p-1 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition"
-                                                >
-                                                    {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-                                                </motion.button>
-                                                <div className="flex items-center space-x-2 text-xs font-semibold">
-                                                    <span>{formatTime(currentTime)}</span>
-                                                    <span>/</span>
-                                                    <span>{formatTime(duration)}</span>
+
+                                        {/* Barra de controles inferior */}
+                                        <div className="w-full bg-[#0d253f] rounded-b-2xl px-4 pb-2 pointer-events-auto">
+                                            <div className="flex justify-end items-center mb-1 pt-1">
+                                                <div className="flex items-center space-x-2 opacity-90">
+                                                    <span className="text-xs font-semibold text-blue-200/90">Cine Brigitte</span>
                                                 </div>
-                                                <motion.button
-                                                    whileHover={{ scale: 1.08 }}
-                                                    whileTap={{ scale: 0.94 }}
-                                                    onClick={handleMuteToggle}
-                                                    className="p-1 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition"
-                                                >
-                                                    {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-                                                </motion.button>
-                                                <input
-                                                    type="range"
-                                                    min="0"
-                                                    max="1"
-                                                    step="0.01"
-                                                    value={volume}
-                                                    onChange={handleVolumeChange}
-                                                    className="w-16 cursor-pointer accent-blue-500"
+                                            </div>
+                                            <div
+                                                className="w-full h-2 bg-white/20 rounded-full cursor-pointer group"
+                                                onClick={handleSeek}
+                                            >
+                                                <div
+                                                    className="h-full rounded-full transition-all duration-150 ease-linear bg-gradient-to-r from-blue-400 to-blue-600"
+                                                    style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
                                                 />
                                             </div>
-                                            <div className="flex items-center space-x-2">
-                                                <motion.button
-                                                    whileHover={{ scale: 1.08 }}
-                                                    whileTap={{ scale: 0.94 }}
-                                                    onClick={handleFullscreenClick}
-                                                    className="p-1 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition"
-                                                >
-                                                    {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
-                                                </motion.button>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <div className="flex items-center space-x-2">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.08 }}
+                                                        whileTap={{ scale: 0.94 }}
+                                                        onClick={isPlaying ? handlePauseClick : handlePlayClick}
+                                                        className="p-1 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition"
+                                                    >
+                                                        {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+                                                    </motion.button>
+                                                    <div className="flex items-center space-x-2 text-xs font-semibold">
+                                                        <span>{formatTime(currentTime)}</span>
+                                                        <span>/</span>
+                                                        <span>{formatTime(duration)}</span>
+                                                    </div>
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.08 }}
+                                                        whileTap={{ scale: 0.94 }}
+                                                        onClick={handleMuteToggle}
+                                                        className="p-1 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition"
+                                                    >
+                                                        {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                                                    </motion.button>
+                                                    <input
+                                                        type="range"
+                                                        min="0"
+                                                        max="1"
+                                                        step="0.01"
+                                                        value={volume}
+                                                        onChange={handleVolumeChange}
+                                                        className="w-16 cursor-pointer accent-blue-500"
+                                                    />
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.08 }}
+                                                        whileTap={{ scale: 0.94 }}
+                                                        onClick={handleFullscreenClick}
+                                                        className="p-1 rounded-full text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition"
+                                                    >
+                                                        {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                                                    </motion.button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </motion.div>
-                            )}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </AnimatePresence>
                     </div>
                 </div>
