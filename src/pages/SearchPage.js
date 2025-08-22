@@ -2,28 +2,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-// MOCK de Supabase para que el código compile
-const supabase = {
-  from: (table) => ({
-    select: (columns) => {
-      // Mock de datos para el editor
-      const movies = [
-        { id: 1, title: 'Película A', genre: 'Acción', cover_image_url: 'https://placehold.co/400x600/1a202c/a0aec0?text=A' },
-        { id: 2, title: 'Película B', genre: 'Comedia', cover_image_url: 'https://placehold.co/400x600/1a202c/a0aec0?text=B' },
-        { id: 3, title: 'Película C', genre: 'Acción', cover_image_url: 'https://placehold.co/400x600/1a202c/a0aec0?text=C' },
-      ];
-      if (columns === 'genre') {
-        return { data: [{ genre: 'Acción' }, { genre: 'Comedia' }], error: null };
-      }
-      return { data: movies, error: null };
-    },
-    eq: (column, value) => ({ data: [], error: null }),
-    ilike: (column, value) => ({
-      data: movies.filter(movie => movie.title.toLowerCase().includes(value.toLowerCase().replace(/%/g, ''))),
-      error: null
-    }),
-  })
-};
+// Importación correcta de Supabase
+import { supabase } from '../utils/supabaseClient';
 import { Search, X, Keyboard, ArrowLeft } from 'lucide-react';
 
 const alphabet = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
@@ -151,7 +131,7 @@ type="text"
 placeholder="Buscar por título..."
 value={searchTerm}
 onChange={(e) => setSearchTerm(e.target.value)}
-className="w-full pl-8 pr-16 py-2 rounded-full bg-black/30 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400/80 transition-all text-sm"
+className="w-full pl-8 pr-16 py-2 rounded-full bg-black/30 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400 transition text-sm"
 />
 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
 {searchTerm && (
@@ -168,7 +148,7 @@ className="w-full pl-8 pr-16 py-2 rounded-full bg-black/30 border border-white/2
 {/* Lado Derecho: Logo y Título */}
 <div className="flex-1 flex justify-end">
 <div className="flex items-center space-x-1 opacity-90">
-<span className="text-xl font-extrabold text-white hidden sm:block">
+<span className="text-xl font-extrabold text-white sm:block">
 Cine Brigitte
 </span>
 <BrigidCross size={24} className="bg-white/10 border border-white/20 shadow-lg p-1" />
@@ -251,11 +231,11 @@ transition={{ type: "spring", stiffness: 300, damping: 30 }}
 className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg p-4 rounded-t-2xl z-50"
 >
 <div className="grid grid-cols-10 gap-2 max-w-3xl mx-auto">
-{alphabet.map(key => (
-<button key={key} onClick={() => handleKeyClick(key)} className="h-10 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-base hover:bg-blue-600/50 transition-colors">{key}</button>
+{alphabet.map(letter => (
+<button key={letter} onClick={() => handleKeyClick(letter)} className="h-10 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-base hover:bg-blue-600/50 transition-colors">{letter}</button>
 ))}
-{numbers.map(key => (
-<button key={key} onClick={() => handleKeyClick(key)} className="h-10 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-base hover:bg-blue-600/50 transition-colors">{key}</button>
+{numbers.map(num => (
+<button key={num} onClick={() => handleKeyClick(num)} className="h-10 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-base hover:bg-blue-600/50 transition-colors">{num}</button>
 ))}
 <button onClick={() => handleKeyClick('⌫')} className="col-span-2 h-10 rounded-lg bg-white/20 border border-white/20 text-white font-bold text-base hover:bg-red-600/50 transition-colors">⌫</button>
 <button onClick={() => handleKeyClick('Espacio')} className="col-span-8 h-10 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-base hover:bg-blue-600/50 transition-colors">Espacio</button>
