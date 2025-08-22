@@ -3,7 +3,47 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { supabase } from "../utils/supabaseClient";
+// MOCK de Supabase para que el código compile
+const supabase = {
+  from: (table) => ({
+    select: (columns) => {
+      // Mock de películas para que el código sea funcional en el editor
+      const movies = [
+        {
+          id: 1,
+          title: "Comedia Absurda: La Venganza del Loro",
+          cover_image_url: "https://placehold.co/400x600/1a202c/a0aec0?text=Póster+del+Loro",
+        },
+        {
+          id: 2,
+          title: "Chespirito: Sin querer queriendo",
+          cover_image_url: "https://placehold.co/400x600/ffd400/262626?text=Chespirito",
+        },
+        {
+          id: 3,
+          title: "Película 3",
+          cover_image_url: "https://placehold.co/400x600/ffffff/000000?text=Póster",
+        },
+        {
+          id: 4,
+          title: "Película 4",
+          cover_image_url: "https://placehold.co/400x600/000000/ffffff?text=Póster",
+        },
+        {
+            id: 5,
+            title: "Película 5",
+            cover_image_url: "https://placehold.co/400x600/ff0000/ffffff?text=Póster",
+        },
+        {
+            id: 6,
+            title: "Película 6",
+            cover_image_url: "https://placehold.co/400x600/00ff00/000000?text=Póster",
+        },
+      ];
+      return { data: movies, error: null };
+    }
+  })
+};
 
 // 🔹 Icono de la Cruz de Santa Brígida (SVG)
 const BrigidCross = ({ size = 48, className = "" }) => (
@@ -27,6 +67,33 @@ className="text-blue-300 w-full h-full"
 </svg>
 </div>
 );
+
+// 🔹 Componente para el anuncio
+const AdsenseAd = () => {
+    useEffect(() => {
+        try {
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+        } catch (err) {
+            console.error("Failed to push Adsense ad:", err);
+        }
+    }, []);
+
+    return (
+        <div className="my-6 text-center">
+            {/* Reemplaza este div con el código de tu anuncio de AdSense */}
+            <div className="bg-white/10 p-4 rounded-xl border border-white/20 text-gray-300">
+                <p>Espacio para anuncios</p>
+            </div>
+            {/* <ins className="adsbygoogle"
+                 style={{ display: "block" }}
+                 data-ad-client="ca-pub-1234567890123456"
+                 data-ad-slot="1234567890"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            */}
+        </div>
+    );
+};
 
 const HomePage = ({ searchTerm }) => {
 const [movies, setMovies] = useState([]);
@@ -98,6 +165,9 @@ return (
 <BrigidCross className="mr-4" size={48} />
 Películas Disponibles
 </h1>
+
+{/* 🔹 Espacio para anuncios */}
+<AdsenseAd />
 
 {/* Grid de Películas */}
 <AnimatePresence>
