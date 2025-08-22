@@ -81,3 +81,4 @@ const MovieInfo = ({ movie, onPlayClick }) => {
 };
 
 export default MovieInfo;
+
